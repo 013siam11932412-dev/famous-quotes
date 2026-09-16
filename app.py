@@ -1,0 +1,94 @@
+import json
+import os
+import random
+from flask import Flask, jsonify, request, send_from_directory
+
+app = Flask(__name__, static_folder="static", static_url_path="")
+
+# Load quotes dataset
+DATA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "quotes.json")
+
+def load_quotes():
+    if not os.path.exists(DATA_FILE):
+        return []
+    with open(DATA_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+QUOTES = load_quotes()
+
+@app.route("/")
+def index():
+    """Serve frontend index.html."""
+    return send_from_directory(app.static_folder, "index.html")
+
+@app.route("/api/quotes/random", methods=["GET"])
+def get_random_quote():
+    """Return a single random quote, optionally filtered by category or author."""
+    category = request.args.get("category", "").strip().lower()
+    author = request.args.get("author", "").strip().lower()
+
+    filtered = QUOTES
+    if category:
+        filtered = [q for q in filtered if q.get("category", "").lower() == category]
+    if author:
+        filtered = [q for q in filtered if author in q.get("author", "").lower()]
+
+    if not filtered:
+        return jsonify({"error": "No quotes found matching criteria"}), 404
+
+    return jsonify({"quote": random.choice(filtered)})
+
+@app.route("/api/quotes", methods=["GET"])
+def get_quotes():
+    """
+    Search and filter quotes.
+    Query params:
+    - q: search in quote text and author
+    - author: filter by author name
+    - category: filter by category
+    """
+    query = request.args.get("q", "").strip().lower()
+    author = request.args.get("author", "").strip().lower()
+    category = request.args.get("category", "").strip().lower()
+
+    results = QUOTES
+
+    if category:
+        results = [q for q in results if q.get("category", "").lower() == category]
+
+    if author:
+        results = [q for q in results if author in q.get("author", "").lower()]
+
+    if query:
+        results = [
+            q for q in results
+            if query in q.get("quote", "").lower() or query in q.get("author", "").lower()
+        ]
+
+    return jsonify({
+        "total": len(results),
+        "quotes": results
+    })
+
+@app.route("/api/quotes/<int:quote_id>", methods=["GET"])
+def get_quote_by_id(quote_id):
+    """Return a single quote by ID."""
+    for q in QUOTES:
+        if q.get("id") == quote_id:
+            return jsonify({"quote": q})
+    return jsonify({"error": "Quote not found"}), 404
+
+@app.route("/api/categories", methods=["GET"])
+def get_categories():
+    """Return a sorted list of unique categories."""
+    categories = sorted(list({q.get("category") for q in QUOTES if q.get("category")}))
+    return jsonify({"categories": categories})
+
+@app.route("/api/authors", methods=["GET"])
+def get_authors():
+    """Return a sorted list of unique authors."""
+    authors = sorted(list({q.get("author") for q in QUOTES if q.get("author")}))
+    return jsonify({"authors": authors})
+
+if __name__ == "__main__":
+    app.run(host="127.0.0.1", port=5000, debug=True)
