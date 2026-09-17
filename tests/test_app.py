@@ -132,3 +132,40 @@ def test_get_authors(client):
     assert "authors" in data
     assert len(data["authors"]) >= 10
     assert "Albert Einstein" in data["authors"]
+
+def test_darksoul_quotes_data_integrity():
+    """Verify data/darksoul_quotes.json exists, contains valid Dark Souls quotes."""
+    from app import DARK_SOUL_DATA_FILE
+    assert os.path.exists(DARK_SOUL_DATA_FILE)
+    with open(DARK_SOUL_DATA_FILE, "r", encoding="utf-8") as f:
+        ds_quotes = json.load(f)
+    assert len(ds_quotes) >= 15
+    for q in ds_quotes:
+        assert "quote" in q and q["quote"].strip()
+        assert "author" in q and q["author"].strip()
+        assert "lore" in q
+
+def test_get_darksoul_quotes(client):
+    """Test /api/darksoul/quotes returns quotes and supports search."""
+    res = client.get("/api/darksoul/quotes")
+    assert res.status_code == 200
+    data = res.get_json()
+    assert data["total"] >= 15
+    assert len(data["quotes"]) >= 15
+
+    # Search query
+    res_search = client.get("/api/darksoul/quotes?q=sun")
+    assert res_search.status_code == 200
+    search_data = res_search.get_json()
+    assert search_data["total"] > 0
+    assert any("Solaire" in q["author"] for q in search_data["quotes"])
+
+def test_get_darksoul_random(client):
+    """Test /api/darksoul/random returns a random quote."""
+    res = client.get("/api/darksoul/random")
+    assert res.status_code == 200
+    data = res.get_json()
+    assert "quote" in data
+    assert "quote" in data["quote"]
+    assert "author" in data["quote"]
+

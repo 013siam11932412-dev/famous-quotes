@@ -15,15 +15,38 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,700;1,400;1,600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,700;1,400;1,600&display=swap" rel="stylesheet">
 </head>
 <body>
+  <!-- Canvas for Floating Embers in Dark Soul Mode -->
+  <canvas id="dark-soul-canvas" class="dark-soul-canvas" aria-hidden="true"></canvas>
+
+  <!-- Dark Soul "BONFIRE LIT" Banner Overlay -->
+  <div class="bonfire-lit-banner" id="bonfire-lit-banner" aria-hidden="true">
+    <div class="bonfire-lit-inner">
+      <div class="bonfire-subtitle top">REST AT THE FLAME</div>
+      <div class="bonfire-title">BONFIRE LIT</div>
+      <div class="bonfire-subtitle bottom">HUMANITY RESTORED</div>
+    </div>
+  </div>
+
   <div class="app-container">
     <!-- Header -->
     <header class="app-header">
-      <div class="header-badge">✨ 100 Famous Quotes</div>
-      <h1 class="app-title">Words of Wisdom</h1>
-      <p class="app-subtitle">Discover, reflect, and search quotes from history's most renowned thinkers, leaders, and creators.</p>
+      <div class="header-top-bar">
+        <div class="header-badge" id="header-badge">✨ 100 Famous Quotes</div>
+        <div class="theme-controls">
+          <button class="dark-soul-toggle" id="dark-soul-toggle" aria-pressed="false" title="Kindle the Bonfire (Dark Soul Mode)">
+            <span class="bonfire-icon" aria-hidden="true">🔥</span>
+            <span class="toggle-label" id="dark-soul-label">Kindle Bonfire</span>
+          </button>
+          <button class="sound-toggle hidden" id="sound-toggle" aria-label="Toggle Bonfire Audio" title="Toggle Bonfire Ambience">
+            <span id="sound-icon">🔊</span>
+          </button>
+        </div>
+      </div>
+      <h1 class="app-title" id="app-title">Words of Wisdom</h1>
+      <p class="app-subtitle" id="app-subtitle">Discover, reflect, and search quotes from history's most renowned thinkers, leaders, and creators.</p>
     </header>
 
     <!-- Hero / Random Quote Card -->
@@ -68,6 +91,16 @@
       </div>
 
       <div class="filter-panel">
+        <!-- Collection Selector Tabs -->
+        <div class="collection-tabs" id="collection-tabs" role="tablist" aria-label="Quote Collection">
+          <button class="collection-tab active" id="tab-all" data-source="all" role="tab" aria-selected="true">
+            ✨ World Wisdom (100)
+          </button>
+          <button class="collection-tab" id="tab-darksoul" data-source="darksoul" role="tab" aria-selected="false">
+            ⚔️ Lordran Lore (Dark Souls)
+          </button>
+        </div>
+
         <!-- Search Input -->
         <div class="search-box">
           <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

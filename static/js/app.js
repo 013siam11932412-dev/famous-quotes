@@ -1,4 +1,4 @@
-// Vanilla JavaScript for Famous Quotes Web Application
+// Vanilla JavaScript for Famous Quotes Web Application with Dark Soul Mode
 
 document.addEventListener('DOMContentLoaded', () => {
   // State
@@ -12,10 +12,20 @@ document.addEventListener('DOMContentLoaded', () => {
       category: '',
       author: ''
     },
-    debounceTimer: null
+    debounceTimer: null,
+    source: 'all', // 'all' (100 quotes) or 'darksoul' (Dark Souls lore)
+    isDarkSoul: localStorage.getItem('famous_quotes_dark_soul') === 'true',
+    soundEnabled: localStorage.getItem('famous_quotes_sound') !== 'false',
+    audioCtx: null,
+    emberAnimId: null
   };
 
   // DOM Elements
+  const headerBadge = document.getElementById('header-badge');
+  const appTitle = document.getElementById('app-title');
+  const appSubtitle = document.getElementById('app-subtitle');
+  const randomHeading = document.getElementById('random-heading');
+
   const heroCard = document.getElementById('hero-quote-card');
   const heroText = document.getElementById('hero-quote-text');
   const heroAuthor = document.getElementById('hero-author');
@@ -23,6 +33,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const heroRandomBtn = document.getElementById('hero-random-btn');
   const heroCopyBtn = document.getElementById('hero-copy-btn');
   const heroCopyText = document.getElementById('hero-copy-text');
+
+  const darkSoulToggle = document.getElementById('dark-soul-toggle');
+  const darkSoulLabel = document.getElementById('dark-soul-label');
+  const soundToggle = document.getElementById('sound-toggle');
+  const bonfireBanner = document.getElementById('bonfire-lit-banner');
+  const emberCanvas = document.getElementById('dark-soul-canvas');
+
+  const tabAll = document.getElementById('tab-all');
+  const tabDarkSoul = document.getElementById('tab-darksoul');
 
   const searchInput = document.getElementById('search-input');
   const clearSearchBtn = document.getElementById('clear-search-btn');
@@ -104,6 +123,262 @@ document.addEventListener('DOMContentLoaded', () => {
     return escapedText.replace(regex, '<mark>$1</mark>');
   }
 
+  // Web Audio Synthesizer for Bonfire Lit sound
+  function getAudioContext() {
+    if (!state.audioCtx) {
+      const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtxClass) {
+        state.audioCtx = new AudioCtxClass();
+      }
+    }
+    if (state.audioCtx && state.audioCtx.state === 'suspended') {
+      state.audioCtx.resume();
+    }
+    return state.audioCtx;
+  }
+
+  function playBonfireIgnitionSound() {
+    if (!state.soundEnabled) return;
+    const ctx = getAudioContext();
+    if (!ctx) return;
+
+    try {
+      const now = ctx.currentTime;
+
+      // 1. Warm Fire Ignition Whoosh (Bandpass noise)
+      const bufferSize = Math.floor(ctx.sampleRate * 1.5);
+      const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      const whiteNoise = ctx.createBufferSource();
+      whiteNoise.buffer = noiseBuffer;
+
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(140, now);
+      filter.frequency.exponentialRampToValueAtTime(500, now + 0.35);
+      filter.frequency.exponentialRampToValueAtTime(70, now + 1.4);
+      filter.Q.setValueAtTime(2.5, now);
+
+      const noiseGain = ctx.createGain();
+      noiseGain.gain.setValueAtTime(0.01, now);
+      noiseGain.gain.linearRampToValueAtTime(0.3, now + 0.25);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 1.4);
+
+      whiteNoise.connect(filter);
+      filter.connect(noiseGain);
+      noiseGain.connect(ctx.destination);
+      whiteNoise.start(now);
+      whiteNoise.stop(now + 1.5);
+
+      // 2. Harmonic Church Bell / Bonfire Chime
+      const frequencies = [130.81, 261.63, 392.00, 523.25];
+      frequencies.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const oscGain = ctx.createGain();
+        osc.type = idx === 0 ? 'triangle' : 'sine';
+        osc.frequency.setValueAtTime(freq, now);
+
+        const initGain = 0.22 / (idx + 1);
+        oscGain.gain.setValueAtTime(0.01, now);
+        oscGain.gain.linearRampToValueAtTime(initGain, now + 0.08);
+        oscGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.4);
+
+        osc.connect(oscGain);
+        oscGain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 2.5);
+      });
+    } catch (e) {
+      console.warn('Audio playback error:', e);
+    }
+  }
+
+  // Floating Embers Canvas Animation
+  let emberParticles = [];
+  function initEmbersCanvas() {
+    if (!emberCanvas) return;
+    const ctx = emberCanvas.getContext('2d');
+    if (!ctx) return;
+
+    function resize() {
+      emberCanvas.width = window.innerWidth;
+      emberCanvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    const count = Math.min(50, Math.floor(window.innerWidth / 25));
+    emberParticles = [];
+    for (let i = 0; i < count; i++) {
+      emberParticles.push({
+        x: Math.random() * emberCanvas.width,
+        y: Math.random() * emberCanvas.height,
+        size: Math.random() * 2.6 + 0.8,
+        speedY: Math.random() * 1.1 + 0.35,
+        speedX: (Math.random() - 0.5) * 0.7,
+        swaySpeed: Math.random() * 0.02 + 0.01,
+        swayOffset: Math.random() * Math.PI * 2,
+        opacity: Math.random() * 0.7 + 0.3,
+        hue: Math.random() > 0.35 ? 35 : 15
+      });
+    }
+
+    function animate() {
+      if (!state.isDarkSoul) {
+        ctx.clearRect(0, 0, emberCanvas.width, emberCanvas.height);
+        return;
+      }
+      ctx.clearRect(0, 0, emberCanvas.width, emberCanvas.height);
+
+      emberParticles.forEach(p => {
+        p.y -= p.speedY;
+        p.swayOffset += p.swaySpeed;
+        p.x += Math.sin(p.swayOffset) * 0.5 + p.speedX;
+
+        if (p.y < -10) {
+          p.y = emberCanvas.height + 10;
+          p.x = Math.random() * emberCanvas.width;
+          p.opacity = Math.random() * 0.7 + 0.3;
+        }
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${p.hue}, 100%, 60%, ${p.opacity})`;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = `hsl(${p.hue}, 100%, 50%)`;
+        ctx.fill();
+        ctx.restore();
+      });
+
+      state.emberAnimId = requestAnimationFrame(animate);
+    }
+
+    if (state.isDarkSoul && !state.emberAnimId) {
+      state.emberAnimId = requestAnimationFrame(animate);
+    }
+  }
+
+  function startEmbers() {
+    if (!state.emberAnimId) {
+      initEmbersCanvas();
+    }
+  }
+
+  // Bonfire Lit Dramatic Banner
+  function showBonfireLitBanner() {
+    if (!bonfireBanner) return;
+    bonfireBanner.classList.add('active');
+    bonfireBanner.setAttribute('aria-hidden', 'false');
+
+    playBonfireIgnitionSound();
+
+    setTimeout(() => {
+      bonfireBanner.classList.remove('active');
+      bonfireBanner.setAttribute('aria-hidden', 'true');
+    }, 2800);
+  }
+
+  // Apply Dark Soul Theme
+  function applyDarkSoulTheme(active, triggerBanner = false) {
+    state.isDarkSoul = active;
+    localStorage.setItem('famous_quotes_dark_soul', active ? 'true' : 'false');
+
+    if (active) {
+      document.body.classList.add('dark-soul-mode');
+      darkSoulToggle.setAttribute('aria-pressed', 'true');
+      darkSoulLabel.textContent = 'Extinguish Bonfire';
+      headerBadge.textContent = '🔥 Bonfire Ignited';
+      appTitle.textContent = 'Words of the Ashen One';
+      appSubtitle.textContent = 'Kindle the flame. Discover, reflect, and uncover the words of lords, knights, and sages.';
+      randomHeading.textContent = "🔥 Flame's Remembrance";
+      heroRandomBtn.querySelector('span').textContent = 'Rest at Bonfire';
+      resetFiltersBtn.textContent = 'Restore Humanity';
+      soundToggle.classList.remove('hidden');
+
+      startEmbers();
+      if (triggerBanner) {
+        showBonfireLitBanner();
+      }
+    } else {
+      document.body.classList.remove('dark-soul-mode');
+      darkSoulToggle.setAttribute('aria-pressed', 'false');
+      darkSoulLabel.textContent = 'Kindle Bonfire';
+      headerBadge.textContent = '✨ 100 Famous Quotes';
+      appTitle.textContent = 'Words of Wisdom';
+      appSubtitle.textContent = "Discover, reflect, and search quotes from history's most renowned thinkers, leaders, and creators.";
+      randomHeading.textContent = 'Quote of the Moment';
+      heroRandomBtn.querySelector('span').textContent = 'Random Quote';
+      resetFiltersBtn.textContent = 'Reset Filters';
+      soundToggle.classList.add('hidden');
+
+      if (emberCanvas) {
+        const ctx = emberCanvas.getContext('2d');
+        if (ctx) ctx.clearRect(0, 0, emberCanvas.width, emberCanvas.height);
+      }
+      if (state.emberAnimId) {
+        cancelAnimationFrame(state.emberAnimId);
+        state.emberAnimId = null;
+      }
+    }
+  }
+
+  function toggleDarkSoulMode() {
+    const nextState = !state.isDarkSoul;
+    applyDarkSoulTheme(nextState, true);
+    if (!nextState) {
+      showToast('Bonfire extinguished. Returned to the mortal realm.');
+    }
+  }
+
+  // Update Sound Toggle Button
+  function updateSoundToggle() {
+    if (!soundToggle) return;
+    if (state.soundEnabled) {
+      soundToggle.classList.remove('muted');
+      soundToggle.innerHTML = '🔊';
+      soundToggle.title = 'Mute Bonfire Ambience';
+    } else {
+      soundToggle.classList.add('muted');
+      soundToggle.innerHTML = '🔇';
+      soundToggle.title = 'Unmute Bonfire Ambience';
+    }
+  }
+
+  // Switch Collection (All 100 vs Lordran Lore)
+  function switchCollection(source) {
+    if (state.source === source) return;
+    state.source = source;
+
+    if (source === 'darksoul') {
+      tabDarkSoul.classList.add('active');
+      tabDarkSoul.setAttribute('aria-selected', 'true');
+      tabAll.classList.remove('active');
+      tabAll.setAttribute('aria-selected', 'false');
+      if (!state.isDarkSoul) {
+        applyDarkSoulTheme(true, true);
+      }
+    } else {
+      tabAll.classList.add('active');
+      tabAll.setAttribute('aria-selected', 'true');
+      tabDarkSoul.classList.remove('active');
+      tabDarkSoul.setAttribute('aria-selected', 'false');
+    }
+
+    state.filters.q = '';
+    state.filters.category = '';
+    state.filters.author = '';
+    searchInput.value = '';
+    clearSearchBtn.classList.remove('visible');
+
+    loadFilterOptions();
+    fetchQuotes();
+    fetchRandomQuote();
+  }
+
   // Render Hero Quote
   function renderHeroQuote(quote) {
     state.heroQuote = quote;
@@ -111,10 +386,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setTimeout(() => {
       heroText.textContent = `"${quote.quote}"`;
-      heroAuthor.textContent = `— ${quote.author}`;
+      const authorText = quote.lore ? `— ${quote.author} (${quote.lore})` : `— ${quote.author}`;
+      heroAuthor.textContent = authorText;
       heroCategory.textContent = quote.category;
       
-      // Update badge styling
       heroCategory.className = `category-badge ${getCategoryClass(quote.category)}`;
       heroCategory.onclick = () => selectCategory(quote.category);
 
@@ -126,7 +401,8 @@ document.addEventListener('DOMContentLoaded', () => {
   async function fetchRandomQuote() {
     heroRandomBtn.classList.add('rotating');
     try {
-      const res = await fetch('/api/quotes/random');
+      const endpoint = state.source === 'darksoul' ? '/api/darksoul/random' : '/api/quotes/random';
+      const res = await fetch(endpoint);
       if (!res.ok) throw new Error('Failed to fetch random quote');
       const data = await res.json();
       if (data.quote) {
@@ -143,6 +419,19 @@ document.addEventListener('DOMContentLoaded', () => {
   // Fetch Filter Options (Categories & Authors)
   async function loadFilterOptions() {
     try {
+      if (state.source === 'darksoul') {
+        const res = await fetch('/api/darksoul/quotes');
+        if (res.ok) {
+          const data = await res.json();
+          const quotes = data.quotes || [];
+          state.categories = Array.from(new Set(quotes.map(q => q.category))).sort();
+          state.authors = Array.from(new Set(quotes.map(q => q.author))).sort();
+          populateCategories(state.categories);
+          populateAuthors(state.authors);
+        }
+        return;
+      }
+
       const [catRes, authRes] = await Promise.all([
         fetch('/api/categories'),
         fetch('/api/authors')
@@ -177,13 +466,11 @@ document.addEventListener('DOMContentLoaded', () => {
     categoryPillsContainer.appendChild(allPill);
 
     categories.forEach(cat => {
-      // Option in select
       const opt = document.createElement('option');
       opt.value = cat;
       opt.textContent = cat;
       categorySelect.appendChild(opt);
 
-      // Pill button
       const pill = document.createElement('button');
       pill.className = 'pill-btn';
       pill.textContent = cat;
@@ -239,10 +526,22 @@ document.addEventListener('DOMContentLoaded', () => {
     resultsCount.textContent = 'Searching...';
 
     try {
-      const res = await fetch(`/api/quotes?${params.toString()}`);
+      const endpoint = state.source === 'darksoul' ? '/api/darksoul/quotes' : '/api/quotes';
+      const res = await fetch(`${endpoint}?${params.toString()}`);
       if (!res.ok) throw new Error('Failed to fetch quotes');
       const data = await res.json();
-      state.quotes = data.quotes || [];
+      let quotes = data.quotes || [];
+
+      if (state.source === 'darksoul') {
+        if (state.filters.category) {
+          quotes = quotes.filter(q => q.category.toLowerCase() === state.filters.category.toLowerCase());
+        }
+        if (state.filters.author) {
+          quotes = quotes.filter(q => q.author.toLowerCase().includes(state.filters.author.toLowerCase()));
+        }
+      }
+
+      state.quotes = quotes;
       renderQuotesGrid(state.quotes, state.filters.q);
     } catch (err) {
       console.error(err);
@@ -254,7 +553,9 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderQuotesGrid(quotes, query) {
     quotesGrid.innerHTML = '';
 
-    resultsCount.textContent = `Showing ${quotes.length} of 100 quotes`;
+    const totalCount = state.source === 'darksoul' ? 20 : 100;
+    const label = state.source === 'darksoul' ? 'Dark Souls quotes' : 'quotes';
+    resultsCount.textContent = `Showing ${quotes.length} of ${totalCount} ${label}`;
 
     if (quotes.length === 0) {
       emptyState.classList.remove('hidden');
@@ -272,12 +573,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const highlightedQuote = highlightMatch(`"${quote.quote}"`, query);
       const highlightedAuthor = highlightMatch(quote.author, query);
       const badgeClass = getCategoryClass(quote.category);
+      const loreTag = quote.lore ? `<span class="quote-card-lore" style="color:var(--text-muted);font-size:0.8rem;font-style:normal;margin-left:0.35rem;">(${escapeHtml(quote.lore)})</span>` : '';
 
       card.innerHTML = `
         <blockquote class="quote-card-text">${highlightedQuote}</blockquote>
         <div class="quote-card-footer">
           <div class="quote-card-meta">
-            <cite class="quote-card-author">— ${highlightedAuthor}</cite>
+            <cite class="quote-card-author">— ${highlightedAuthor}${loreTag}</cite>
             <span class="category-badge ${badgeClass}" data-cat="${escapeHtml(quote.category)}">
               ${escapeHtml(quote.category)}
             </span>
@@ -291,13 +593,11 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       `;
 
-      // Copy click
       const copyBtn = card.querySelector('.card-copy-btn');
       copyBtn.addEventListener('click', () => {
         copyToClipboard(`"${quote.quote}" — ${quote.author}`);
       });
 
-      // Category badge click to filter
       const catBadge = card.querySelector('.category-badge');
       catBadge.addEventListener('click', () => {
         selectCategory(quote.category);
@@ -323,6 +623,23 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Event Listeners
+  darkSoulToggle.addEventListener('click', toggleDarkSoulMode);
+
+  soundToggle.addEventListener('click', () => {
+    state.soundEnabled = !state.soundEnabled;
+    localStorage.setItem('famous_quotes_sound', state.soundEnabled ? 'true' : 'false');
+    updateSoundToggle();
+    if (state.soundEnabled) {
+      playBonfireIgnitionSound();
+      showToast('Bonfire audio resonance enabled');
+    } else {
+      showToast('Bonfire audio muted');
+    }
+  });
+
+  tabAll.addEventListener('click', () => switchCollection('all'));
+  tabDarkSoul.addEventListener('click', () => switchCollection('darksoul'));
+
   heroRandomBtn.addEventListener('click', fetchRandomQuote);
 
   heroCopyBtn.addEventListener('click', async () => {
@@ -377,6 +694,10 @@ document.addEventListener('DOMContentLoaded', () => {
   emptyResetBtn.addEventListener('click', resetFilters);
 
   // Initialize
+  updateSoundToggle();
+  if (state.isDarkSoul) {
+    applyDarkSoulTheme(true, false);
+  }
   fetchRandomQuote();
   loadFilterOptions();
   fetchQuotes();

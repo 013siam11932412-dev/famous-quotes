@@ -1,0 +1,142 @@
+[
+  {
+    "id": 1001,
+    "quote": "The sun is a wondrous body. Like a magnificent father! If only I could be so grossly incandescent!",
+    "author": "Solaire of Astora",
+    "category": "Inspiration",
+    "lore": "Warrior of Sunlight"
+  },
+  {
+    "id": 1002,
+    "quote": "Don't get yourself killed neither. Neither of us want to see you go Hollow.",
+    "author": "Andre of Astora",
+    "category": "Wisdom",
+    "lore": "Blacksmith of the Undead Parish"
+  },
+  {
+    "id": 1003,
+    "quote": "Good bye then. Be safe, friend. Don't you dare go Hollow.",
+    "author": "Laurentius of the Great Swamp",
+    "category": "Wisdom",
+    "lore": "Pyromancer of the Great Swamp"
+  },
+  {
+    "id": 1004,
+    "quote": "My name is Lucatiel. I beg of you, remember my name. For I may not myself, but... a little while.",
+    "author": "Lucatiel of Mirrah",
+    "category": "Philosophy",
+    "lore": "Knight of Mirrah"
+  },
+  {
+    "id": 1005,
+    "quote": "There is no path. Beyond the scope of light, beyond the reach of Dark... what could possibly await us? And yet, we seek it, insatiably.",
+    "author": "Aldia, Scholar of the First Sin",
+    "category": "Philosophy",
+    "lore": "Scholar of the First Sin"
+  },
+  {
+    "id": 1006,
+    "quote": "A lie will remain a lie.",
+    "author": "Aldia, Scholar of the First Sin",
+    "category": "Wisdom",
+    "lore": "Scholar of the First Sin"
+  },
+  {
+    "id": 1007,
+    "quote": "Seek strength. The rest will follow.",
+    "author": "King Vendrick",
+    "category": "Leadership",
+    "lore": "Ruler of Drangleic"
+  },
+  {
+    "id": 1008,
+    "quote": "I may be small, but I will die a colossus.",
+    "author": "Ludleth of Courland",
+    "category": "Inspiration",
+    "lore": "Lord of Cinder"
+  },
+  {
+    "id": 1009,
+    "quote": "Ashen One, hearest thou my voice, still?",
+    "author": "The Fire Keeper",
+    "category": "Philosophy",
+    "lore": "Keeper of the Shrine"
+  },
+  {
+    "id": 1010,
+    "quote": "Still closed... Still closed... Mmm... No use making a song and dance about it. I have to use my head and think.",
+    "author": "Siegmeyer of Catarina",
+    "category": "Wisdom",
+    "lore": "Knight of Catarina"
+  },
+  {
+    "id": 1011,
+    "quote": "Thou who art Undead, art chosen... In thine exodus from the Undead Asylum, makest pilgrimage to the land of Ancient Lords.",
+    "author": "Oscar of Astora",
+    "category": "Literature",
+    "lore": "Knight of Astora"
+  },
+  {
+    "id": 1012,
+    "quote": "Yes, indeed. It is called Lothric, where the transitory lands of the Lords of Cinder converge.",
+    "author": "Narrator",
+    "category": "Literature",
+    "lore": "Prologue of Lothric"
+  },
+  {
+    "id": 1013,
+    "quote": "Praise the Sun!",
+    "author": "Solaire of Astora",
+    "category": "Inspiration",
+    "lore": "Covenant of the Sun"
+  },
+  {
+    "id": 1014,
+    "quote": "Our Lord and Liege. I prithee play the usurper. Wrest the fire from its mantle.",
+    "author": "Yuria of Londor",
+    "category": "Leadership",
+    "lore": "Darkwraith of Londor"
+  },
+  {
+    "id": 1015,
+    "quote": "Humans are such fascinating creatures. Quite incapable of giving up, aren't they?",
+    "author": "Karla",
+    "category": "Philosophy",
+    "lore": "Child of the Abyss"
+  },
+  {
+    "id": 1016,
+    "quote": "Every fleeting man must one day succumb to the dark.",
+    "author": "Sir Vilhelm",
+    "category": "Philosophy",
+    "lore": "Knight of Friede"
+  },
+  {
+    "id": 1017,
+    "quote": "Fear not the dark, my friend, and let the feast begin.",
+    "author": "Locust Preacher",
+    "category": "Wisdom",
+    "lore": "Ringed City Preacher"
+  },
+  {
+    "id": 1018,
+    "quote": "To be alive... to walk this earth... That's the real curse right there.",
+    "author": "Crestfallen Saulden",
+    "category": "Philosophy",
+    "lore": "Monumental of Majula"
+  },
+  {
+    "id": 1019,
+    "quote": "Let the flames guide thee.",
+    "author": "Fire Keeper",
+    "category": "Inspiration",
+    "lore": "Keeper of the Shrine"
+  },
+  {
+    "id": 1020,
+    "quote": "Even in the deepest darkness, a single ember may kindle a roaring fire.",
+    "author": "Ashen One Lore",
+    "category": "Inspiration",
+    "lore": "Chronicles of Lordran"
+  }
+]

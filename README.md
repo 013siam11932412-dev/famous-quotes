@@ -22,8 +22,14 @@ A web application built with **Python Flask**, **Plain Vanilla JavaScript (ES6+)
 - 📱 **Responsive & Modern UI**:
   - Pure CSS Grid and Flexbox with glassmorphism card elevation and dark theme.
   - Zero heavy frontend frameworks or build steps.
+- 🔥 **Dark Soul Mode (Kindle Bonfire)**:
+  - Cinematic Dark Souls aesthetic with deep abyss styling and burnished ember borders.
+  - "BONFIRE LIT" dramatic banner with Web Audio API synthesized bonfire ignition chime.
+  - Ambient floating ember particle canvas animation.
+  - Dedicated "Lordran Lore" collection featuring 20 curated quotes from Dark Souls characters.
+  - Persistent theme settings in `localStorage`.
 - 🧪 **Automated Testing Suite**:
-  - 14 tests verifying API routes, query filtering, and data integrity of all 100 quotes.
+  - 17 tests verifying API routes, query filtering, Dark Souls endpoints, and data integrity.
 
 ---
 
@@ -35,15 +41,16 @@ famous-quotes/
 ├── requirements.txt       # Python dependencies (Flask, pytest)
 ├── pytest.ini             # Pytest configuration
 ├── data/
-│   └── quotes.json        # Curated dataset of 100 quotes
+│   ├── quotes.json        # Curated dataset of 100 quotes
+│   └── darksoul_quotes.json # Curated dataset of 20 Dark Souls lore quotes
 ├── static/
-│   ├── index.html         # Semantic HTML5 layout
+│   ├── index.html         # Semantic HTML5 layout with Dark Soul overlay
 │   ├── css/
-│   │   └── style.css      # Responsive CSS styles
+│   │   └── style.css      # Responsive CSS styles & Dark Soul theme
 │   └── js/
-│       └── app.js         # Plain Vanilla JS frontend logic
+│       └── app.js         # Plain Vanilla JS frontend logic & Web Audio synthesizer
 └── tests/
-    └── test_app.py        # Pytest test suite
+    └── test_app.py        # Pytest test suite (17 tests)
 ```
 
 ---
@@ -86,6 +93,8 @@ http://127.0.0.1:5000
 | `GET` | `/api/quotes/<id>` | Returns single quote by ID |
 | `GET` | `/api/categories` | Returns list of unique categories |
 | `GET` | `/api/authors` | Returns list of unique authors |
+| `GET` | `/api/darksoul/quotes` | Returns Dark Souls lore quotes (supports `?q=`) |
+| `GET` | `/api/darksoul/random` | Returns random Dark Souls lore quote |
 
 ---
 

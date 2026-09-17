@@ -7,6 +7,7 @@ app = Flask(__name__, static_folder="static", static_url_path="")
 
 # Load quotes dataset
 DATA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "quotes.json")
+DARK_SOUL_DATA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "darksoul_quotes.json")
 
 def load_quotes():
     if not os.path.exists(DATA_FILE):
@@ -14,7 +15,14 @@ def load_quotes():
     with open(DATA_FILE, "r", encoding="utf-8") as f:
         return json.load(f)
 
+def load_darksoul_quotes():
+    if not os.path.exists(DARK_SOUL_DATA_FILE):
+        return []
+    with open(DARK_SOUL_DATA_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
+
 QUOTES = load_quotes()
+DARK_SOUL_QUOTES = load_darksoul_quotes()
 
 @app.route("/")
 def index():
@@ -89,6 +97,28 @@ def get_authors():
     """Return a sorted list of unique authors."""
     authors = sorted(list({q.get("author") for q in QUOTES if q.get("author")}))
     return jsonify({"authors": authors})
+
+@app.route("/api/darksoul/quotes", methods=["GET"])
+def get_darksoul_quotes():
+    """Return Dark Souls lore quotes with search and filter capabilities."""
+    query = request.args.get("q", "").strip().lower()
+    results = DARK_SOUL_QUOTES
+    if query:
+        results = [
+            q for q in results
+            if query in q.get("quote", "").lower() or query in q.get("author", "").lower() or query in q.get("lore", "").lower()
+        ]
+    return jsonify({
+        "total": len(results),
+        "quotes": results
+    })
+
+@app.route("/api/darksoul/random", methods=["GET"])
+def get_random_darksoul_quote():
+    """Return a random Dark Souls quote."""
+    if not DARK_SOUL_QUOTES:
+        return jsonify({"error": "No Dark Souls quotes found"}), 404
+    return jsonify({"quote": random.choice(DARK_SOUL_QUOTES)})
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5000, debug=True)
