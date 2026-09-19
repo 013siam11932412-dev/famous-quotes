@@ -26,7 +26,6 @@ A web application built with **Python Flask**, **Plain Vanilla JavaScript (ES6+)
   - Cinematic Dark Souls aesthetic with deep abyss styling and burnished ember borders.
   - "BONFIRE LIT" dramatic banner with Web Audio API synthesized bonfire ignition chime.
   - Ambient floating ember particle canvas animation.
-  - Dedicated "Lordran Lore" collection featuring 20 curated quotes from Dark Souls characters.
   - Persistent theme settings in `localStorage`.
 - 🧪 **Automated Testing Suite**:
   - 17 tests verifying API routes, query filtering, Dark Souls endpoints, and data integrity.

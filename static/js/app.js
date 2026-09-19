@@ -13,7 +13,6 @@ document.addEventListener('DOMContentLoaded', () => {
       author: ''
     },
     debounceTimer: null,
-    source: 'all', // 'all' (100 quotes) or 'darksoul' (Dark Souls lore)
     isDarkSoul: localStorage.getItem('famous_quotes_dark_soul') === 'true',
     soundEnabled: localStorage.getItem('famous_quotes_sound') !== 'false',
     audioCtx: null,
@@ -40,8 +39,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const bonfireBanner = document.getElementById('bonfire-lit-banner');
   const emberCanvas = document.getElementById('dark-soul-canvas');
 
-  const tabAll = document.getElementById('tab-all');
-  const tabDarkSoul = document.getElementById('tab-darksoul');
 
   const searchInput = document.getElementById('search-input');
   const clearSearchBtn = document.getElementById('clear-search-btn');
@@ -348,37 +345,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Switch Collection (All 100 vs Lordran Lore)
-  function switchCollection(source) {
-    if (state.source === source) return;
-    state.source = source;
-
-    if (source === 'darksoul') {
-      tabDarkSoul.classList.add('active');
-      tabDarkSoul.setAttribute('aria-selected', 'true');
-      tabAll.classList.remove('active');
-      tabAll.setAttribute('aria-selected', 'false');
-      if (!state.isDarkSoul) {
-        applyDarkSoulTheme(true, true);
-      }
-    } else {
-      tabAll.classList.add('active');
-      tabAll.setAttribute('aria-selected', 'true');
-      tabDarkSoul.classList.remove('active');
-      tabDarkSoul.setAttribute('aria-selected', 'false');
-    }
-
-    state.filters.q = '';
-    state.filters.category = '';
-    state.filters.author = '';
-    searchInput.value = '';
-    clearSearchBtn.classList.remove('visible');
-
-    loadFilterOptions();
-    fetchQuotes();
-    fetchRandomQuote();
-  }
-
   // Render Hero Quote
   function renderHeroQuote(quote) {
     state.heroQuote = quote;
@@ -386,8 +352,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setTimeout(() => {
       heroText.textContent = `"${quote.quote}"`;
-      const authorText = quote.lore ? `— ${quote.author} (${quote.lore})` : `— ${quote.author}`;
-      heroAuthor.textContent = authorText;
+      heroAuthor.textContent = `— ${quote.author}`;
       heroCategory.textContent = quote.category;
       
       heroCategory.className = `category-badge ${getCategoryClass(quote.category)}`;
@@ -401,8 +366,7 @@ document.addEventListener('DOMContentLoaded', () => {
   async function fetchRandomQuote() {
     heroRandomBtn.classList.add('rotating');
     try {
-      const endpoint = state.source === 'darksoul' ? '/api/darksoul/random' : '/api/quotes/random';
-      const res = await fetch(endpoint);
+      const res = await fetch('/api/quotes/random');
       if (!res.ok) throw new Error('Failed to fetch random quote');
       const data = await res.json();
       if (data.quote) {
@@ -419,19 +383,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Fetch Filter Options (Categories & Authors)
   async function loadFilterOptions() {
     try {
-      if (state.source === 'darksoul') {
-        const res = await fetch('/api/darksoul/quotes');
-        if (res.ok) {
-          const data = await res.json();
-          const quotes = data.quotes || [];
-          state.categories = Array.from(new Set(quotes.map(q => q.category))).sort();
-          state.authors = Array.from(new Set(quotes.map(q => q.author))).sort();
-          populateCategories(state.categories);
-          populateAuthors(state.authors);
-        }
-        return;
-      }
-
       const [catRes, authRes] = await Promise.all([
         fetch('/api/categories'),
         fetch('/api/authors')
@@ -526,22 +477,10 @@ document.addEventListener('DOMContentLoaded', () => {
     resultsCount.textContent = 'Searching...';
 
     try {
-      const endpoint = state.source === 'darksoul' ? '/api/darksoul/quotes' : '/api/quotes';
-      const res = await fetch(`${endpoint}?${params.toString()}`);
+      const res = await fetch(`/api/quotes?${params.toString()}`);
       if (!res.ok) throw new Error('Failed to fetch quotes');
       const data = await res.json();
-      let quotes = data.quotes || [];
-
-      if (state.source === 'darksoul') {
-        if (state.filters.category) {
-          quotes = quotes.filter(q => q.category.toLowerCase() === state.filters.category.toLowerCase());
-        }
-        if (state.filters.author) {
-          quotes = quotes.filter(q => q.author.toLowerCase().includes(state.filters.author.toLowerCase()));
-        }
-      }
-
-      state.quotes = quotes;
+      state.quotes = data.quotes || [];
       renderQuotesGrid(state.quotes, state.filters.q);
     } catch (err) {
       console.error(err);
@@ -553,9 +492,8 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderQuotesGrid(quotes, query) {
     quotesGrid.innerHTML = '';
 
-    const totalCount = state.source === 'darksoul' ? 20 : 100;
-    const label = state.source === 'darksoul' ? 'Dark Souls quotes' : 'quotes';
-    resultsCount.textContent = `Showing ${quotes.length} of ${totalCount} ${label}`;
+    const totalCount = 100;
+    resultsCount.textContent = `Showing ${quotes.length} of ${totalCount} quotes`;
 
     if (quotes.length === 0) {
       emptyState.classList.remove('hidden');
@@ -573,13 +511,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const highlightedQuote = highlightMatch(`"${quote.quote}"`, query);
       const highlightedAuthor = highlightMatch(quote.author, query);
       const badgeClass = getCategoryClass(quote.category);
-      const loreTag = quote.lore ? `<span class="quote-card-lore" style="color:var(--text-muted);font-size:0.8rem;font-style:normal;margin-left:0.35rem;">(${escapeHtml(quote.lore)})</span>` : '';
 
       card.innerHTML = `
         <blockquote class="quote-card-text">${highlightedQuote}</blockquote>
         <div class="quote-card-footer">
           <div class="quote-card-meta">
-            <cite class="quote-card-author">— ${highlightedAuthor}${loreTag}</cite>
+            <cite class="quote-card-author">— ${highlightedAuthor}</cite>
             <span class="category-badge ${badgeClass}" data-cat="${escapeHtml(quote.category)}">
               ${escapeHtml(quote.category)}
             </span>
@@ -637,8 +574,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  tabAll.addEventListener('click', () => switchCollection('all'));
-  tabDarkSoul.addEventListener('click', () => switchCollection('darksoul'));
 
   heroRandomBtn.addEventListener('click', fetchRandomQuote);
 
