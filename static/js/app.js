@@ -13,6 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
       author: ''
     },
     debounceTimer: null,
+    theme: localStorage.getItem('famous_quotes_theme') || 
+           (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'),
     isDarkSoul: localStorage.getItem('famous_quotes_dark_soul') === 'true',
     soundEnabled: localStorage.getItem('famous_quotes_sound') !== 'false',
     audioCtx: null,
@@ -21,6 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // DOM Elements
   const headerBadge = document.getElementById('header-badge');
+  const themeToggle = document.getElementById('theme-toggle');
+  const themeToggleLabel = document.getElementById('theme-toggle-label');
   const appTitle = document.getElementById('app-title');
   const appSubtitle = document.getElementById('app-subtitle');
   const randomHeading = document.getElementById('random-heading');
@@ -281,12 +285,51 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 2800);
   }
 
+  // Light / Dark Theme Management
+  function applyTheme(theme, save = true) {
+    state.theme = theme;
+    if (save) {
+      localStorage.setItem('famous_quotes_theme', theme);
+    }
+
+    if (theme === 'light') {
+      document.body.classList.add('light-mode');
+      if (themeToggle) {
+        themeToggle.setAttribute('aria-checked', 'true');
+        themeToggle.title = 'Switch to Dark mode';
+      }
+      if (themeToggleLabel) {
+        themeToggleLabel.textContent = 'Light';
+      }
+      // If Bonfire mode was active, extinguish it
+      if (state.isDarkSoul) {
+        applyDarkSoulTheme(false, false);
+      }
+    } else {
+      document.body.classList.remove('light-mode');
+      if (themeToggle) {
+        themeToggle.setAttribute('aria-checked', 'false');
+        themeToggle.title = 'Switch to Light mode';
+      }
+      if (themeToggleLabel) {
+        themeToggleLabel.textContent = 'Dark';
+      }
+    }
+  }
+
+  function toggleTheme() {
+    const nextTheme = state.theme === 'light' ? 'dark' : 'light';
+    applyTheme(nextTheme, true);
+    showToast(`Switched to ${nextTheme === 'light' ? 'Light' : 'Dark'} mode`);
+  }
+
   // Apply Dark Soul Theme
   function applyDarkSoulTheme(active, triggerBanner = false) {
     state.isDarkSoul = active;
     localStorage.setItem('famous_quotes_dark_soul', active ? 'true' : 'false');
 
     if (active) {
+      document.body.classList.remove('light-mode');
       document.body.classList.add('dark-soul-mode');
       darkSoulToggle.setAttribute('aria-pressed', 'true');
       darkSoulLabel.textContent = 'Extinguish Bonfire';
@@ -305,6 +348,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } else {
       document.body.classList.remove('dark-soul-mode');
+      if (state.theme === 'light') {
+        document.body.classList.add('light-mode');
+      }
       darkSoulToggle.setAttribute('aria-pressed', 'false');
       darkSoulLabel.textContent = 'Kindle Bonfire';
       headerBadge.textContent = '✨ 100 Famous Quotes';
@@ -706,7 +752,21 @@ document.addEventListener('DOMContentLoaded', () => {
     exportCsvBtn.addEventListener('click', exportVisibleQuotesToCSV);
   }
 
+  if (themeToggle) {
+    themeToggle.addEventListener('click', toggleTheme);
+  }
+
+  if (window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
+      // Only auto-switch if user hasn't explicitly chosen a preference in localStorage
+      if (!localStorage.getItem('famous_quotes_theme')) {
+        applyTheme(e.matches ? 'light' : 'dark', false);
+      }
+    });
+  }
+
   // Initialize
+  applyTheme(state.theme, false);
   updateSoundToggle();
   if (state.isDarkSoul) {
     applyDarkSoulTheme(true, false);

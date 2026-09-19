@@ -22,6 +22,10 @@ A web application built with **Python Flask**, **Plain Vanilla JavaScript (ES6+)
 - 📱 **Responsive & Modern UI**:
   - Pure CSS Grid and Flexbox with glassmorphism card elevation and dark theme.
   - Zero heavy frontend frameworks or build steps.
+- 🌓 **Dark / Light Mode Toggle**:
+  - Seamless toggle switch in the header supporting both a sleek Slate Dark mode and a crisp Light mode.
+  - Automatic OS system preference detection (`prefers-color-scheme`) and persistent `localStorage` preference saving.
+  - Smooth interaction with the Easter-egg Dark Soul bonfire mode.
 - 📋 **Copy to Clipboard Everywhere**:
   - Individual "Copy" buttons on every quote card with clipboard icon and visual checkmark state change.
   - Hero quote quick-copy button with toast notification.
@@ -34,7 +38,7 @@ A web application built with **Python Flask**, **Plain Vanilla JavaScript (ES6+)
   - Ambient floating ember particle canvas animation.
   - Persistent theme settings in `localStorage`.
 - 🧪 **Automated Testing Suite**:
-  - 19 tests verifying API routes, CSV export, query filtering, Dark Souls endpoints, and data integrity.
+  - 20 tests verifying API routes, CSV export, theme toggle, query filtering, Dark Souls endpoints, and data integrity.
 
 ---
 

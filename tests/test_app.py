@@ -33,6 +33,12 @@ def test_index_route(client):
     assert res.status_code == 200
     assert b"Words of Wisdom" in res.data or b"Famous Quotes" in res.data
 
+def test_index_has_theme_toggle(client):
+    """Test that index page includes the dark/light theme toggle switch."""
+    res = client.get("/")
+    assert res.status_code == 200
+    assert b'id="theme-toggle"' in res.data
+
 def test_get_random_quote(client):
     """Test /api/quotes/random returns a valid quote."""
     res = client.get("/api/quotes/random")
