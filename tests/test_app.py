@@ -39,6 +39,18 @@ def test_index_has_theme_toggle(client):
     assert res.status_code == 200
     assert b'id="theme-toggle"' in res.data
 
+def test_index_has_active_filters_bar(client):
+    """Test that index page includes the active filter chips container."""
+    res = client.get("/")
+    assert res.status_code == 200
+    assert b'id="active-filters-bar"' in res.data
+
+def test_index_has_back_to_top_button(client):
+    """Test that index page includes the floating back-to-top button."""
+    res = client.get("/")
+    assert res.status_code == 200
+    assert b'id="back-to-top-btn"' in res.data
+
 def test_get_random_quote(client):
     """Test /api/quotes/random returns a valid quote."""
     res = client.get("/api/quotes/random")

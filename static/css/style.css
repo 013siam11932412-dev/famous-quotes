@@ -707,6 +707,107 @@ select:focus {
   box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
 }
 
+/* --- Active Filter Chips Bar --- */
+.active-filters-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  padding: 0.75rem 1rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  animation: filterFadeIn 0.2s ease-in-out;
+}
+
+@keyframes filterFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.active-filters-bar.hidden {
+  display: none;
+}
+
+.active-filters-label {
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-right: 0.2rem;
+}
+
+.active-chips-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  color: var(--text-primary);
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  transition: var(--transition);
+}
+
+.filter-chip .chip-label {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.filter-chip .chip-value {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.filter-chip .chip-remove-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0 0.25rem;
+  margin-left: 0.15rem;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.filter-chip .chip-remove-btn:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.18);
+}
+
+.clear-all-chips-btn {
+  background: none;
+  border: none;
+  color: var(--accent-primary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.2rem 0.5rem;
+  margin-left: auto;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: var(--transition);
+}
+
+.clear-all-chips-btn:hover {
+  color: var(--accent-primary-hover);
+}
+
 /* --- Quotes Grid --- */
 .quotes-grid {
   display: grid;
@@ -868,6 +969,52 @@ mark {
   color: var(--text-muted);
   font-size: 0.85rem;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* --- Back to Top Floating Button --- */
+.back-to-top-btn {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(12px);
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s, background-color 0.2s ease, border-color 0.2s ease;
+  z-index: 90;
+}
+
+.back-to-top-btn.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.back-to-top-btn:hover {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: #ffffff;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+}
+
+@media (max-width: 640px) {
+  .back-to-top-btn {
+    bottom: 1.25rem;
+    right: 1.25rem;
+    width: 40px;
+    height: 40px;
+  }
 }
 
 /* Responsive adjustments */
@@ -1070,6 +1217,40 @@ body.light-mode .badge-inspiration { color: #047857; border-color: rgba(4, 120, 
 body.light-mode .badge-wisdom { color: #1d4ed8; border-color: rgba(29, 78, 216, 0.35); background: rgba(29, 78, 216, 0.08); }
 body.light-mode .badge-humor { color: #c2410c; border-color: rgba(194, 65, 12, 0.35); background: rgba(194, 65, 12, 0.08); }
 body.light-mode .badge-art { color: #7e22ce; border-color: rgba(126, 34, 206, 0.35); background: rgba(126, 34, 206, 0.08); }
+
+/* Active Filters & Back to Top in Light Mode */
+body.light-mode .active-filters-bar {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+body.light-mode .filter-chip {
+  background: rgba(99, 102, 241, 0.08);
+  border-color: rgba(99, 102, 241, 0.25);
+  color: #0f172a;
+}
+
+body.light-mode .filter-chip .chip-label {
+  color: #64748b;
+}
+
+body.light-mode .filter-chip .chip-value {
+  color: #0f172a;
+}
+
+body.light-mode .back-to-top-btn {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #0f172a;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+}
+
+body.light-mode .back-to-top-btn:hover {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: #ffffff;
+}
 
 
 /* --- Collection Tabs --- */
@@ -1417,5 +1598,51 @@ body.dark-soul-mode .export-btn.exported {
   color: #f59e0b;
   background: rgba(245, 158, 11, 0.2);
   border-color: #f59e0b;
+}
+
+body.dark-soul-mode .active-filters-bar {
+  background: rgba(20, 15, 12, 0.9);
+  border-color: rgba(180, 83, 9, 0.4);
+}
+
+body.dark-soul-mode .filter-chip {
+  background: rgba(180, 83, 9, 0.2);
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #fef08a;
+}
+
+body.dark-soul-mode .filter-chip .chip-label {
+  color: #d4a373;
+}
+
+body.dark-soul-mode .filter-chip .chip-value {
+  color: #fef08a;
+}
+
+body.dark-soul-mode .filter-chip .chip-remove-btn {
+  color: #fde68a;
+}
+
+body.dark-soul-mode .filter-chip .chip-remove-btn:hover {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.25);
+}
+
+body.dark-soul-mode .clear-all-chips-btn {
+  color: #f59e0b;
+}
+
+body.dark-soul-mode .back-to-top-btn {
+  background: rgba(28, 20, 15, 0.92);
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #fde68a;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.7), 0 0 15px rgba(245, 158, 11, 0.2);
+}
+
+body.dark-soul-mode .back-to-top-btn:hover {
+  background: linear-gradient(135deg, #b45309, #d97706);
+  border-color: #f59e0b;
+  color: #ffffff;
+  box-shadow: 0 6px 22px rgba(245, 158, 11, 0.5);
 }
 

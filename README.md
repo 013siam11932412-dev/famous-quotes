@@ -32,13 +32,20 @@ A web application built with **Python Flask**, **Plain Vanilla JavaScript (ES6+)
 - 📥 **Export to CSV**:
   - One-click "Export to CSV" button to download all currently visible quotes based on active search or filter criteria.
   - Fully formatted with UTF-8 BOM for seamless compatibility in Excel, Google Sheets, and LibreOffice.
+- 🏷️ **Active Filter Chips Bar**:
+  - Instant visual feedback displaying each active filter criteria (Search term, Category, Author).
+  - Removable chips with one-click `(✕)` removal to clear individual filters without resetting everything.
+  - "Clear all" button when multiple filters are active.
+- ⬆️ **Floating "Back to Top" Action**:
+  - Smooth floating circular button that appears after scrolling down 350px.
+  - One-click smooth scrolling return to the search and filter controls.
 - 🔥 **Dark Soul Mode (Kindle Bonfire)**:
   - Cinematic Dark Souls aesthetic with deep abyss styling and burnished ember borders.
   - "BONFIRE LIT" dramatic banner with Web Audio API synthesized bonfire ignition chime.
   - Ambient floating ember particle canvas animation.
   - Persistent theme settings in `localStorage`.
 - 🧪 **Automated Testing Suite**:
-  - 20 tests verifying API routes, CSV export, theme toggle, query filtering, Dark Souls endpoints, and data integrity.
+  - 22 tests verifying API routes, CSV export, theme toggle, UI controls, query filtering, Dark Souls endpoints, and data integrity.
 
 ---
 

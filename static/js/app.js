@@ -54,6 +54,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const resultsCount = document.getElementById('results-count');
   const exportCsvBtn = document.getElementById('export-csv-btn');
   const exportCsvText = document.getElementById('export-csv-text');
+  const activeFiltersBar = document.getElementById('active-filters-bar');
+  const activeChipsList = document.getElementById('active-chips-list');
+  const clearAllChipsBtn = document.getElementById('clear-all-chips-btn');
+  const backToTopBtn = document.getElementById('back-to-top-btn');
   const quotesGrid = document.getElementById('quotes-grid');
   const emptyState = document.getElementById('empty-state');
   const emptyResetBtn = document.getElementById('empty-reset-btn');
@@ -532,6 +536,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await res.json();
       state.quotes = data.quotes || [];
       renderQuotesGrid(state.quotes, state.filters.q);
+      renderActiveFilterChips();
     } catch (err) {
       console.error(err);
       resultsCount.textContent = 'Error loading quotes';
@@ -665,6 +670,84 @@ document.addEventListener('DOMContentLoaded', () => {
     showToast(`Exported ${state.quotes.length} quotes to CSV!`);
   }
 
+  // Render Active Filter Chips
+  function renderActiveFilterChips() {
+    if (!activeFiltersBar || !activeChipsList) return;
+
+    activeChipsList.innerHTML = '';
+    const activeFilters = [];
+
+    if (state.filters.q) {
+      activeFilters.push({
+        type: 'q',
+        label: 'Search',
+        value: `"${state.filters.q}"`,
+        onRemove: () => {
+          state.filters.q = '';
+          searchInput.value = '';
+          clearSearchBtn.classList.remove('visible');
+          fetchQuotes();
+        }
+      });
+    }
+
+    if (state.filters.category) {
+      activeFilters.push({
+        type: 'category',
+        label: 'Category',
+        value: state.filters.category,
+        onRemove: () => {
+          state.filters.category = '';
+          categorySelect.value = '';
+          updatePillsHighlight();
+          fetchQuotes();
+        }
+      });
+    }
+
+    if (state.filters.author) {
+      activeFilters.push({
+        type: 'author',
+        label: 'Author',
+        value: state.filters.author,
+        onRemove: () => {
+          state.filters.author = '';
+          authorSelect.value = '';
+          fetchQuotes();
+        }
+      });
+    }
+
+    if (activeFilters.length === 0) {
+      activeFiltersBar.classList.add('hidden');
+      return;
+    }
+
+    activeFiltersBar.classList.remove('hidden');
+
+    activeFilters.forEach(f => {
+      const chip = document.createElement('span');
+      chip.className = 'filter-chip';
+      chip.innerHTML = `
+        <span class="chip-label">${escapeHtml(f.label)}:</span>
+        <strong class="chip-value">${escapeHtml(f.value)}</strong>
+        <button class="chip-remove-btn" title="Remove ${escapeHtml(f.label)} filter" aria-label="Remove ${escapeHtml(f.label)} filter">×</button>
+      `;
+
+      const removeBtn = chip.querySelector('.chip-remove-btn');
+      removeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        f.onRemove();
+      });
+
+      activeChipsList.appendChild(chip);
+    });
+
+    if (clearAllChipsBtn) {
+      clearAllChipsBtn.style.display = activeFilters.length >= 2 ? 'inline-block' : 'none';
+    }
+  }
+
   // Reset all filters
   function resetFilters() {
     state.filters.q = '';
@@ -676,6 +759,7 @@ document.addEventListener('DOMContentLoaded', () => {
     categorySelect.value = '';
     authorSelect.value = '';
     updatePillsHighlight();
+    renderActiveFilterChips();
 
     fetchQuotes();
   }
@@ -748,8 +832,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
   resetFiltersBtn.addEventListener('click', resetFilters);
   emptyResetBtn.addEventListener('click', resetFilters);
+  if (clearAllChipsBtn) {
+    clearAllChipsBtn.addEventListener('click', resetFilters);
+  }
   if (exportCsvBtn) {
     exportCsvBtn.addEventListener('click', exportVisibleQuotesToCSV);
+  }
+
+  // Back to Top Button
+  function handleWindowScroll() {
+    if (!backToTopBtn) return;
+    if (window.scrollY > 350) {
+      backToTopBtn.classList.add('visible');
+    } else {
+      backToTopBtn.classList.remove('visible');
+    }
+  }
+
+  window.addEventListener('scroll', handleWindowScroll, { passive: true });
+
+  if (backToTopBtn) {
+    backToTopBtn.addEventListener('click', () => {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    });
   }
 
   if (themeToggle) {
