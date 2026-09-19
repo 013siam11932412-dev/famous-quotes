@@ -22,13 +22,19 @@ A web application built with **Python Flask**, **Plain Vanilla JavaScript (ES6+)
 - 📱 **Responsive & Modern UI**:
   - Pure CSS Grid and Flexbox with glassmorphism card elevation and dark theme.
   - Zero heavy frontend frameworks or build steps.
+- 📋 **Copy to Clipboard Everywhere**:
+  - Individual "Copy" buttons on every quote card with clipboard icon and visual checkmark state change.
+  - Hero quote quick-copy button with toast notification.
+- 📥 **Export to CSV**:
+  - One-click "Export to CSV" button to download all currently visible quotes based on active search or filter criteria.
+  - Fully formatted with UTF-8 BOM for seamless compatibility in Excel, Google Sheets, and LibreOffice.
 - 🔥 **Dark Soul Mode (Kindle Bonfire)**:
   - Cinematic Dark Souls aesthetic with deep abyss styling and burnished ember borders.
   - "BONFIRE LIT" dramatic banner with Web Audio API synthesized bonfire ignition chime.
   - Ambient floating ember particle canvas animation.
   - Persistent theme settings in `localStorage`.
 - 🧪 **Automated Testing Suite**:
-  - 17 tests verifying API routes, query filtering, Dark Souls endpoints, and data integrity.
+  - 19 tests verifying API routes, CSV export, query filtering, Dark Souls endpoints, and data integrity.
 
 ---
 
@@ -89,6 +95,7 @@ http://127.0.0.1:5000
 | `GET` | `/` | Serves the single-page application |
 | `GET` | `/api/quotes/random` | Returns a random quote (supports `?category=` & `?author=`) |
 | `GET` | `/api/quotes` | Returns quotes filtered by `?q=`, `?author=`, and/or `?category=` |
+| `GET` | `/api/quotes/export` | Exports filtered quotes as a downloadable CSV file |
 | `GET` | `/api/quotes/<id>` | Returns single quote by ID |
 | `GET` | `/api/categories` | Returns list of unique categories |
 | `GET` | `/api/authors` | Returns list of unique authors |

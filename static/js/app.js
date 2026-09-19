@@ -48,6 +48,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const resetFiltersBtn = document.getElementById('reset-filters-btn');
 
   const resultsCount = document.getElementById('results-count');
+  const exportCsvBtn = document.getElementById('export-csv-btn');
+  const exportCsvText = document.getElementById('export-csv-text');
   const quotesGrid = document.getElementById('quotes-grid');
   const emptyState = document.getElementById('empty-state');
   const emptyResetBtn = document.getElementById('empty-reset-btn');
@@ -294,6 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
       randomHeading.textContent = "🔥 Flame's Remembrance";
       heroRandomBtn.querySelector('span').textContent = 'Rest at Bonfire';
       resetFiltersBtn.textContent = 'Restore Humanity';
+      if (exportCsvText) exportCsvText.textContent = 'Export Tomes (CSV)';
       soundToggle.classList.remove('hidden');
 
       startEmbers();
@@ -310,6 +313,7 @@ document.addEventListener('DOMContentLoaded', () => {
       randomHeading.textContent = 'Quote of the Moment';
       heroRandomBtn.querySelector('span').textContent = 'Random Quote';
       resetFiltersBtn.textContent = 'Reset Filters';
+      if (exportCsvText) exportCsvText.textContent = 'Export to CSV';
       soundToggle.classList.add('hidden');
 
       if (emberCanvas) {
@@ -521,18 +525,39 @@ document.addEventListener('DOMContentLoaded', () => {
               ${escapeHtml(quote.category)}
             </span>
           </div>
-          <button class="card-copy-btn" title="Copy quote" aria-label="Copy quote">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button class="card-copy-btn" title="Copy quote to clipboard" aria-label="Copy quote to clipboard">
+            <svg class="copy-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
             </svg>
+            <span class="card-copy-text">Copy</span>
           </button>
         </div>
       `;
 
       const copyBtn = card.querySelector('.card-copy-btn');
-      copyBtn.addEventListener('click', () => {
-        copyToClipboard(`"${quote.quote}" — ${quote.author}`);
+      copyBtn.addEventListener('click', async () => {
+        const text = `"${quote.quote}" — ${quote.author}`;
+        const success = await copyToClipboard(text);
+        if (success) {
+          copyBtn.classList.add('copied');
+          copyBtn.innerHTML = `
+            <svg class="check-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span class="card-copy-text">Copied!</span>
+          `;
+          setTimeout(() => {
+            copyBtn.classList.remove('copied');
+            copyBtn.innerHTML = `
+              <svg class="copy-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span class="card-copy-text">Copy</span>
+            `;
+          }, 1800);
+        }
       });
 
       const catBadge = card.querySelector('.category-badge');
@@ -542,6 +567,56 @@ document.addEventListener('DOMContentLoaded', () => {
 
       quotesGrid.appendChild(card);
     });
+  }
+
+  // Export currently visible quotes to CSV
+  function exportVisibleQuotesToCSV() {
+    if (!state.quotes || state.quotes.length === 0) {
+      showToast('No visible quotes to export');
+      return;
+    }
+
+    const headers = ['ID', 'Quote', 'Author', 'Category'];
+    const rows = state.quotes.map(q => {
+      const id = q.id ?? '';
+      const quoteText = `"${(q.quote || '').replace(/"/g, '""')}"`;
+      const authorText = `"${(q.author || '').replace(/"/g, '""')}"`;
+      const categoryText = `"${(q.category || '').replace(/"/g, '""')}"`;
+      return [id, quoteText, authorText, categoryText].join(',');
+    });
+
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+
+    let filename = 'famous_quotes';
+    if (state.filters.category) {
+      filename += `_${state.filters.category.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+    }
+    if (state.filters.author) {
+      filename += `_${state.filters.author.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+    }
+    filename += `_${state.quotes.length}_quotes.csv`;
+
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    if (exportCsvBtn && exportCsvText) {
+      const origText = exportCsvText.textContent;
+      exportCsvBtn.classList.add('exported');
+      exportCsvText.textContent = 'Exported!';
+      setTimeout(() => {
+        exportCsvBtn.classList.remove('exported');
+        exportCsvText.textContent = origText;
+      }, 1800);
+    }
+
+    showToast(`Exported ${state.quotes.length} quotes to CSV!`);
   }
 
   // Reset all filters
@@ -627,6 +702,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   resetFiltersBtn.addEventListener('click', resetFilters);
   emptyResetBtn.addEventListener('click', resetFilters);
+  if (exportCsvBtn) {
+    exportCsvBtn.addEventListener('click', exportVisibleQuotesToCSV);
+  }
 
   // Initialize
   updateSoundToggle();

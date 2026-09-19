@@ -169,3 +169,28 @@ def test_get_darksoul_random(client):
     assert "quote" in data["quote"]
     assert "author" in data["quote"]
 
+def test_export_quotes_csv_all(client):
+    """Test /api/quotes/export returns all quotes as CSV."""
+    res = client.get("/api/quotes/export")
+    assert res.status_code == 200
+    assert "text/csv" in res.content_type
+    assert "attachment; filename=" in res.headers.get("Content-Disposition", "")
+    content = res.data.decode("utf-8-sig")
+    lines = [line.strip() for line in content.splitlines() if line.strip()]
+    # Header + 100 quote rows
+    assert lines[0] == "ID,Quote,Author,Category"
+    assert len(lines) == 101
+
+def test_export_quotes_csv_filtered(client):
+    """Test /api/quotes/export with query filters."""
+    res = client.get("/api/quotes/export?category=Science&author=Einstein")
+    assert res.status_code == 200
+    content = res.data.decode("utf-8-sig")
+    lines = [line.strip() for line in content.splitlines() if line.strip()]
+    assert lines[0] == "ID,Quote,Author,Category"
+    assert len(lines) > 1
+    for line in lines[1:]:
+        assert "Einstein" in line
+        assert "Science" in line
+
+

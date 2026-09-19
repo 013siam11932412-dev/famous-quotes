@@ -1,7 +1,9 @@
+import csv
+import io
 import json
 import os
 import random
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request, Response, send_from_directory
 
 app = Flask(__name__, static_folder="static", static_url_path="")
 
@@ -77,6 +79,51 @@ def get_quotes():
         "total": len(results),
         "quotes": results
     })
+
+@app.route("/api/quotes/export", methods=["GET"])
+def export_quotes():
+    """
+    Export filtered quotes as a downloadable CSV file.
+    Query params:
+    - q: search in quote text and author
+    - author: filter by author name
+    - category: filter by category
+    """
+    query = request.args.get("q", "").strip().lower()
+    author = request.args.get("author", "").strip().lower()
+    category = request.args.get("category", "").strip().lower()
+
+    results = QUOTES
+
+    if category:
+        results = [q for q in results if q.get("category", "").lower() == category]
+
+    if author:
+        results = [q for q in results if author in q.get("author", "").lower()]
+
+    if query:
+        results = [
+            q for q in results
+            if query in q.get("quote", "").lower() or query in q.get("author", "").lower()
+        ]
+
+    output = io.StringIO()
+    # Write UTF-8 BOM for spreadsheet compatibility
+    output.write("\ufeff")
+    writer = csv.writer(output)
+    writer.writerow(["ID", "Quote", "Author", "Category"])
+    for q in results:
+        writer.writerow([q.get("id", ""), q.get("quote", ""), q.get("author", ""), q.get("category", "")])
+
+    csv_data = output.getvalue()
+    filename = f"famous_quotes_{len(results)}_quotes.csv"
+    return Response(
+        csv_data,
+        mimetype="text/csv; charset=utf-8",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"'
+        }
+    )
 
 @app.route("/api/quotes/<int:quote_id>", methods=["GET"])
 def get_quote_by_id(quote_id):
